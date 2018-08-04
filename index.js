@@ -14,7 +14,7 @@ const store = {
 let count = 0;
 let init = false;
 let interval = null;
-const startTracing = ({ debug = false }) => {
+const startTracing = ({ debug = false } = {}) => {
   interval = setInterval(() => {
     // console.log(process.pid);
 

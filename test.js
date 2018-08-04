@@ -1,6 +1,6 @@
 const tracing = require('./index');
 
-tracing.startTracing();
+tracing.startTracing({ debug: true });
 
 setTimeout(() => {
   tracing.stopTracing();
