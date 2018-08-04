@@ -6,8 +6,24 @@ const EventLoopMonitor = require('evloop-monitor');
 const sampleEveryMs = 5000;
 const postDataEveryN = 4;
 
+function getCpuPercent(startTime, startUsage) {
+  var elapTimeMS = hrtimeToMS(process.hrtime(startTime));
+  var elapUsageMS = usageToTotalUsageMS(process.cpuUsage(startUsage));
+  return ((100.0 * elapUsageMS) / elapTimeMS).toFixed(1);
+}
+
+function usageToTotalUsageMS(elapUsage) {
+  var elapUserMS = elapUsage.user / 1000.0; // microseconds to milliseconds
+  var elapSystemMS = elapUsage.system / 1000.0;
+  return elapUserMS + elapSystemMS;
+}
+
+function hrtimeToMS(hrtime) {
+  return hrtime[0] * 1000.0 + hrtime[1] / 1000000.0;
+}
+
 const store = {
-  prevStats: [],
+  statsTest: [],
   stats: [],
 };
 
@@ -15,47 +31,50 @@ let count = 0;
 let init = false;
 let interval = null;
 const startTracing = ({ debug = false } = {}) => {
+  var startTime = process.hrtime();
+  var startUsage = process.cpuUsage();
+
   interval = setInterval(() => {
     // console.log(process.pid);
 
     pidusage(process.pid, function(err, stats) {
       stats.memoryBytes = stats.memory / (1024 * 1024);
-      if (init) {
-        const s = {
-          p: process.pid,
-          m: (stats.memory / (1024 * 1024)).toFixed(2),
-          c: stats.cpu.toFixed(2),
-          t: Math.round(new Date().getTime() / 1000),
-        };
-        store.stats.push(s);
-        count++;
+      // if (init) {
+      const s = {
+        p: process.pid,
+        c: stats.cpu.toFixed(2),
+        m: (stats.memory / (1024 * 1024)).toFixed(2),
+        t: Math.round(new Date().getTime() / 1000),
+      };
+      store.stats.push(s);
+      count++;
 
-        if (count === postDataEveryN) {
-          if (debug) {
-            console.log(store.stats);
-          }
-          store.prevStats = store.stats;
-          store.stats = [];
-
-          count = 0;
+      if (count === postDataEveryN) {
+        if (debug) {
+          console.log(store.stats);
         }
-      } else {
-        init = true;
-      }
+        store.prevStats = store.stats;
+        store.stats = [];
 
-      // => {
-      //   cpu: 10.0,            // percentage (from 0 to 100*vcore)
-      //   memory: 357306368,    // bytes
-      //   ppid: 312,            // PPID
-      //   pid: 727,             // PID
-      //   ctime: 867000,        // ms user + system time
-      //   elapsed: 6650000,     // ms since the start of the process
-      //   timestamp: 864000000  // ms since epoch
-      // }
+        count = 0;
+      }
     });
 
-    // const memory = process.memoryUsage().rss / (1024*1024);
+    const s = {
+      p: process.pid,
+      c: getCpuPercent(startTime, startUsage),
+      m: process.memoryUsage().rss / (1024 * 1024),
+      t: Math.round(new Date().getTime() / 1000),
+    };
+
+    console.log(s);
+
+    // console.log(getCpuPercent(startTime, startUsage));
+    // const memory = process.memoryUsage().rss / (1024 * 1024);
     // console.log(memory);
+    // console.log(process.pid);
+    startTime = process.hrtime();
+    startUsage = process.cpuUsage();
   }, sampleEveryMs);
 };
 
