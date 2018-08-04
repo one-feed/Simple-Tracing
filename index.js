@@ -14,7 +14,7 @@ const store = {
 let count = 0;
 let init = false;
 let interval = null;
-const startTracing = () => {
+const startTracing = ({ debug = false }) => {
   interval = setInterval(() => {
     // console.log(process.pid);
 
@@ -22,15 +22,17 @@ const startTracing = () => {
       stats.memoryBytes = stats.memory / (1024 * 1024);
       if (init) {
         const s = {
-          m: stats.memory / (1024 * 1024),
-          c: stats.cpu,
+          m: (stats.memory / (1024 * 1024)).toFixed(2),
+          c: stats.cpu.toFixed(2),
           t: Math.round(new Date().getTime() / 1000),
         };
         store.stats.push(s);
         count++;
 
         if (count === postDataEveryN) {
-          console.log(store.stats);
+          if (debug) {
+            console.log(store.stats);
+          }
           store.prevStats = store.stats;
           store.stats = [];
 
