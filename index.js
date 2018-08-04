@@ -3,8 +3,8 @@ const pidusage = require('pidusage');
 const EventLoopMonitor = require('evloop-monitor');
 // const monitor = new EventLoopMonitor(200);
 
-const sampleEveryMs = 1000;
-const postDataEveryN = 5;
+const sampleEveryMs = 5000;
+const postDataEveryN = 4;
 
 const store = {
   prevStats: [],
@@ -22,6 +22,7 @@ const startTracing = ({ debug = false } = {}) => {
       stats.memoryBytes = stats.memory / (1024 * 1024);
       if (init) {
         const s = {
+          p: process.pid,
           m: (stats.memory / (1024 * 1024)).toFixed(2),
           c: stats.cpu.toFixed(2),
           t: Math.round(new Date().getTime() / 1000),
