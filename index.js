@@ -37,28 +37,28 @@ const startTracing = ({ debug = false } = {}) => {
   interval = setInterval(() => {
     // console.log(process.pid);
 
-    pidusage(process.pid, function(err, stats) {
-      stats.memoryBytes = stats.memory / (1024 * 1024);
-      // if (init) {
-      const s = {
-        p: process.pid,
-        c: stats.cpu.toFixed(2),
-        m: (stats.memory / (1024 * 1024)).toFixed(2),
-        t: Math.round(new Date().getTime() / 1000),
-      };
-      store.stats.push(s);
-      count++;
+    // pidusage(process.pid, function(err, stats) {
+    //   stats.memoryBytes = stats.memory / (1024 * 1024);
+    //   // if (init) {
+    //   const s = {
+    //     p: process.pid,
+    //     c: stats.cpu.toFixed(2),
+    //     m: (stats.memory / (1024 * 1024)).toFixed(2),
+    //     t: Math.round(new Date().getTime() / 1000),
+    //   };
+    //   store.stats.push(s);
+    //   count++;
 
-      if (count === postDataEveryN) {
-        if (debug) {
-          console.log(store.stats);
-        }
-        store.prevStats = store.stats;
-        store.stats = [];
+    //   if (count === postDataEveryN) {
+    //     if (debug) {
+    //       console.log(store.stats);
+    //     }
+    //     store.prevStats = store.stats;
+    //     store.stats = [];
 
-        count = 0;
-      }
-    });
+    //     count = 0;
+    //   }
+    // });
 
     const s = {
       p: process.pid,
@@ -67,7 +67,13 @@ const startTracing = ({ debug = false } = {}) => {
       t: Math.round(new Date().getTime() / 1000),
     };
 
-    console.log(s);
+    if (debug) {
+      console.log(s);
+    }
+
+    if (s.c > 20 || s.m > 100) {
+      console.log(s);
+    }
 
     // console.log(getCpuPercent(startTime, startUsage));
     // const memory = process.memoryUsage().rss / (1024 * 1024);
